@@ -18,11 +18,7 @@ public class Bullet : MonoBehaviour
 
         Vector3 pos = contact.point - contact.normal * 0.1f;
 
-        Instantiate(
-            hitEffect,
-            contact.point,
-            Quaternion.LookRotation(contact.normal)
-        );
+        Instantiate( hitEffect, contact.point, Quaternion.LookRotation(contact.normal) );
 
         Destroy(gameObject);
     }

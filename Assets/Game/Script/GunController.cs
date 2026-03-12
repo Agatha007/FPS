@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -24,7 +26,21 @@ public class GunController : MonoBehaviour
     [Header("ÃÑ¾Ë ÆÛÁü")]
     public float bulletSpread = 2f;
 
+    [Header("ÃÑ¾Ë °ü¸®")]
+    public Transform bulletRoot;
+    public Transform hitRoot;
+
+    [Header("ÃÑ »ç¿ë ¿©ºÎ")]
+    public bool canShoot = true;
+
     public Transform playerCamera;
+
+    [Header("Ç®¸µ")]
+    public int bulletPoolSize = 100;
+    public int hitPoolSize = 50;
+
+    private List<GameObject> bulletPool = new List<GameObject>();
+    private List<GameObject> hitPool = new List<GameObject>();
 
     private float nextFireTime = 0f;
 
@@ -32,11 +48,23 @@ public class GunController : MonoBehaviour
     {
         if (gun != null)
             gunOriginalPos = gun.localPosition;
+
+        if (bulletRoot == null)
+        {
+            GameObject obj = new GameObject("Bullets");
+            bulletRoot = obj.transform;
+        }
+
+        if (hitRoot == null)
+        {
+            GameObject obj = new GameObject("HitEffects");
+            hitRoot = obj.transform;
+        }
     }
 
     private void Update()
     {
-        if (Mouse.current.leftButton.isPressed)
+        if (canShoot && Mouse.current.leftButton.isPressed)
         {
             if (Time.time >= nextFireTime)
             {
@@ -49,20 +77,20 @@ public class GunController : MonoBehaviour
             }
         }
 
-        // ÃÑ ¿øÀ§Ä¡ º¹±Í
         if (gun != null)
         {
             gun.localPosition = Vector3.Lerp(
                 gun.localPosition,
                 gunOriginalPos,
-                gunReturnSpeed * Time.deltaTime
-            );
+                gunReturnSpeed * Time.deltaTime);
         }
     }
 
     private void ShootProjectile()
     {
         if (currentBulletCount >= maxBulletCount) return;
+
+        SoundManager.Instance.PlaySFX("shotSound");
 
         float spreadX = Random.Range(-bulletSpread, bulletSpread);
         float spreadY = Random.Range(-bulletSpread, bulletSpread);
@@ -74,14 +102,18 @@ public class GunController : MonoBehaviour
 
         shootDir.Normalize();
 
-        GameObject bullet = Instantiate(
-            bulletPrefab,
-            firePoint.position,
-            Quaternion.LookRotation(shootDir)
-        );
+        GameObject bullet = GetBullet();
 
-        Rigidbody bulletRb = bullet.GetComponent<Rigidbody>();
-        bulletRb.AddForce(shootDir * bulletSpeed, ForceMode.VelocityChange);
+        bullet.transform.position = firePoint.position;
+        bullet.transform.rotation = Quaternion.LookRotation(shootDir);
+        bullet.SetActive(true);
+
+        Rigidbody rb = bullet.GetComponent<Rigidbody>();
+
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+
+        rb.AddForce(shootDir * bulletSpeed, ForceMode.VelocityChange);
 
         currentBulletCount++;
 
@@ -90,6 +122,8 @@ public class GunController : MonoBehaviour
 
     private void ShootRay()
     {
+        SoundManager.Instance.PlaySFX("shotSound");
+
         float spreadX = Random.Range(-bulletSpread, bulletSpread);
         float spreadY = Random.Range(-bulletSpread, bulletSpread);
 
@@ -106,21 +140,67 @@ public class GunController : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, 100f))
         {
-            Debug.Log("Hit : " + hit.collider.name);
-
             if (hitEffect != null)
             {
                 Vector3 pos = hit.point + hit.normal * 0.02f;
 
-                Instantiate(
-                    hitEffect,
-                    pos,
-                    Quaternion.LookRotation(hit.normal)
-                );
+                GameObject effect = GetHitEffect();
+
+                effect.transform.position = pos;
+                effect.transform.rotation = Quaternion.LookRotation(hit.normal);
+                effect.SetActive(true);
+
+                StartCoroutine(DisableEffect(effect, 2f));
             }
         }
 
         GunKick();
+    }
+
+    private GameObject GetBullet()
+    {
+        // ²¨Á®ÀÖ´Â ÃÑ¾Ë ¸ÕÀú Ã£±â
+        for (int i = 0; i < bulletPool.Count; i++)
+        {
+            if (!bulletPool[i].activeInHierarchy)
+            {
+                return bulletPool[i];
+            }
+        }
+
+        // ¾øÀ¸¸é »õ·Î »ý¼º
+        GameObject obj = Instantiate(bulletPrefab, bulletRoot);
+        obj.SetActive(false);
+
+        bulletPool.Add(obj);
+
+        return obj;
+    }
+
+    private GameObject GetHitEffect()
+    {
+        for (int i = 0; i < hitPool.Count; i++)
+        {
+            if (!hitPool[i].activeInHierarchy)
+            {
+                return hitPool[i];
+            }
+        }
+
+        GameObject obj = Instantiate(hitEffect, hitRoot);
+        obj.SetActive(false);
+
+        hitPool.Add(obj);
+
+        return obj;
+    }
+
+    private IEnumerator DisableEffect(GameObject obj, float time)
+    {
+        yield return new WaitForSeconds(time);
+
+        if (obj != null)
+            obj.SetActive(false);
     }
 
     private void GunKick()

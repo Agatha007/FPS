@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 5882379968078594575}
   - component: {fileID: 5248908981682456013}
   - component: {fileID: 7863707640016799102}
-  - component: {fileID: 2480552792829537330}
   - component: {fileID: 445731829626943986}
   m_Layer: 2
   m_Name: bulletHole
@@ -114,19 +113,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &2480552792829537330
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8436083365011439390}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 63fcd57c108bbc844ac776aeae523ba7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  timeToDestroy: 5
 --- !u!114 &445731829626943986
 MonoBehaviour:
   m_ObjectHideFlags: 0

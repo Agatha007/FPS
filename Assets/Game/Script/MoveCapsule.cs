@@ -36,7 +36,8 @@ public class MoveCapsule : MonoBehaviour
     void Update()
     {
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        if (Mouse.current.leftButton.isPressed && mousePos.x > Screen.width * 0.5f)
+        //if (Mouse.current.leftButton.isPressed && mousePos.x > Screen.width * 0.5f)
+        if (Mouse.current.leftButton.isPressed)
         {
             float mouseX = Mouse.current.delta.x.ReadValue();
             float mouseY = Mouse.current.delta.y.ReadValue();

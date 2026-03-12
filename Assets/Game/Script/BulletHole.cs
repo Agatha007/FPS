@@ -1,8 +1,9 @@
 using UnityEngine;
 
 public class BulletHole : MonoBehaviour
-{    void Start()
+{    
+    void Start()
     {
-        Destroy(gameObject, 10f);
+        //Destroy(gameObject, 10f);
     }
 }
