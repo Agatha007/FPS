@@ -6,19 +6,21 @@ using UnityEngine.InputSystem;
 public class GunController : MonoBehaviour
 {
     [Header("ÃÑ ¼³Á¤")]
+    public Transform[] guns;
     public Transform gun;
     public float gunKickbackZ = 0.02f;
     public float gunReturnSpeed = 12f;
 
     private Vector3 gunOriginalPos;
 
-    [Header("ÃÑ¾Ë/¹ß»ç")]
+    [Header("ÃÑ¾Ë/¹ß»ç")]    
     public bool useRaycast = false;
     public GameObject bulletPrefab;
     public Transform firePoint;
     public float bulletSpeed = 20f;
     public float fireRate = 0.1f;
     public GameObject hitEffect;
+    public GameObject shotEffect;
 
     public int maxBulletCount = 100;
     private int currentBulletCount = 0;
@@ -46,8 +48,7 @@ public class GunController : MonoBehaviour
 
     private void Start()
     {
-        if (gun != null)
-            gunOriginalPos = gun.localPosition;
+        SetGun();
 
         if (bulletRoot == null)
         {
@@ -84,13 +85,43 @@ public class GunController : MonoBehaviour
                 gunOriginalPos,
                 gunReturnSpeed * Time.deltaTime);
         }
+
+
+        if (Keyboard.current.digit1Key.wasPressedThisFrame)
+        {
+            SetGun(0);
+        }
+
+        if (Keyboard.current.digit2Key.wasPressedThisFrame)
+        {
+            SetGun(1);
+        }
+    }
+
+    private void SetGun(int index = 0)
+    {
+        foreach (var gun in guns)
+            gun.gameObject.SetActive(false);
+
+        gun = guns[index];
+        gun.gameObject.SetActive(true);        
+
+        var weapon = gun.GetComponent<Weapon>();
+        gunKickbackZ = weapon.gunKickbackZ;
+        gunReturnSpeed = weapon.gunReturnSpeed;
+        bulletPrefab = weapon.bulletPrefab;
+        firePoint = weapon.firePoint;
+        bulletSpeed = weapon.bulletSpeed;
+        fireRate = weapon.fireRate;
+        bulletSpread = weapon.bulletSpread;
+        gunOriginalPos = weapon.gunOriginalPos;
     }
 
     private void ShootProjectile()
     {
         if (currentBulletCount >= maxBulletCount) return;
 
-        SoundManager.Instance.PlaySFX("shotSound");
+        SoundManager.Instance.PlaySFX("shot");
 
         float spreadX = Random.Range(-bulletSpread, bulletSpread);
         float spreadY = Random.Range(-bulletSpread, bulletSpread);
@@ -117,12 +148,13 @@ public class GunController : MonoBehaviour
 
         currentBulletCount++;
 
+        ShotEffect();
         GunKick();
     }
 
     private void ShootRay()
     {
-        SoundManager.Instance.PlaySFX("shotSound");
+        SoundManager.Instance.PlaySFX("shot");
 
         float spreadX = Random.Range(-bulletSpread, bulletSpread);
         float spreadY = Random.Range(-bulletSpread, bulletSpread);
@@ -154,6 +186,7 @@ public class GunController : MonoBehaviour
             }
         }
 
+        ShotEffect();
         GunKick();
     }
 
@@ -210,6 +243,17 @@ public class GunController : MonoBehaviour
         float zKick = -gunKickbackZ;
 
         gun.localPosition = gunOriginalPos + new Vector3(0f, 0f, zKick);
+    }
+
+    public void ShotEffect()
+    {
+        if (shotEffect == null)
+            return;
+        if (firePoint == null)
+            return;
+
+        GameObject obj = Instantiate(shotEffect, firePoint);
+        obj.transform.localPosition = Vector3.zero;
     }
 
     public void RemoveBullet()
