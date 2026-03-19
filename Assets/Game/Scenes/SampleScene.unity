@@ -1176,6 +1176,12 @@ MonoBehaviour:
   playerCamera: {fileID: 330585546}
   bulletPoolSize: 100
   hitPoolSize: 50
+  magazineSize: 30
+  currentAmmo: 0
+  reloadTime: 1
+  reloadRotation: {x: 0, y: 0, z: -25}
+  reloadRotateSpeed: 5
+  reloadStayTime: 1
 --- !u!1 &2093407320
 GameObject:
   m_ObjectHideFlags: 0

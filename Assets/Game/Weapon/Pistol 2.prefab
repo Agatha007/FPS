@@ -1788,6 +1788,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d85f6a5cdc2169d458a51bc1859ddaed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Weapon
+  gun: {fileID: 6666567688023039541}
   gunKickbackZ: 0.04
   gunReturnSpeed: 12
   bulletPrefab: {fileID: 0}
@@ -1795,6 +1796,12 @@ MonoBehaviour:
   bulletSpeed: 10
   fireRate: 0.5
   bulletSpread: 1
+  magazineSize: 7
+  reloadTime: 1
+  reloadRotation: {x: 0, y: 0, z: 25}
+  reloadRotateSpeed: 5
+  reloadStayTime: 1
+  gunOriginalPos: {x: 0, y: 0, z: 0}
 --- !u!1 &5876240994711457314
 GameObject:
   m_ObjectHideFlags: 0

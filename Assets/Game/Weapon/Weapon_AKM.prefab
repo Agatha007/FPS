@@ -119,13 +119,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d85f6a5cdc2169d458a51bc1859ddaed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Weapon
+  gun: {fileID: 2971939007219267818}
   gunKickbackZ: 0.02
   gunReturnSpeed: 12
   bulletPrefab: {fileID: 0}
   firePoint: {fileID: 6065798372318225365}
   bulletSpeed: 20
   fireRate: 0.1
-  bulletSpread: 2
+  bulletSpread: 4
+  magazineSize: 30
+  reloadTime: 1
+  reloadRotation: {x: 0, y: 0, z: -25}
+  reloadRotateSpeed: 5
+  reloadStayTime: 1
+  gunOriginalPos: {x: 0, y: 0, z: 0}
+  gunOriginalRot: {x: 0, y: 0, z: 0, w: 0}
 --- !u!4 &2971939007219267818 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400002, guid: 75dcb58506746b84db987c4ce01e99b5, type: 3}

@@ -12,6 +12,7 @@ public class GunController : MonoBehaviour
     public float gunReturnSpeed = 12f;
 
     private Vector3 gunOriginalPos;
+    private Quaternion gunOriginalRot;
 
     [Header("총알/발사")]    
     public bool useRaycast = false;
@@ -46,9 +47,23 @@ public class GunController : MonoBehaviour
 
     private float nextFireTime = 0f;
 
+    [Header("리로드")]
+    public int magazineSize = 30;     // 한 탄창
+    public int currentAmmo;           // 현재 탄창 탄수
+    public float reloadTime = 2f;     // 장전 시간
+    private bool isReloading = false;
+
+    [Header("리로드 회전 연출")]
+    public Vector3 reloadRotation = new Vector3(0f, 0f, -25f); // Z축으로 기울기
+    public float reloadRotateSpeed = 5f;
+    public float reloadStayTime = 1f;
+
+    private Weapon weapon;
+    private Coroutine reloadCoroutine;
+
     private void Start()
     {
-        SetGun();
+        SetGun();        
 
         if (bulletRoot == null)
         {
@@ -65,20 +80,27 @@ public class GunController : MonoBehaviour
 
     private void Update()
     {
-        if (canShoot && Mouse.current.leftButton.isPressed)
+        if (canShoot && !isReloading && Mouse.current.leftButton.isPressed)
         {
             if (Time.time >= nextFireTime)
             {
-                if (useRaycast)
-                    ShootRay();
-                else
-                    ShootProjectile();
+                if (currentAmmo > 0)
+                {
+                    if (useRaycast)
+                        ShootRay();
+                    else
+                        ShootProjectile();
 
-                nextFireTime = Time.time + fireRate;
+                    currentAmmo--;
+                    nextFireTime = Time.time + fireRate;
+
+                    if(currentAmmo <= 0)
+                        reloadCoroutine = StartCoroutine(Reload());
+                }
             }
         }
 
-        if (gun != null)
+        if (gun != null && !isReloading)
         {
             gun.localPosition = Vector3.Lerp(
                 gun.localPosition,
@@ -96,17 +118,34 @@ public class GunController : MonoBehaviour
         {
             SetGun(1);
         }
+
+        // 리로드 (R키)
+        if (Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            if (!isReloading && currentAmmo < magazineSize)
+            {
+                reloadCoroutine = StartCoroutine(Reload());
+            }
+        }
     }
 
     private void SetGun(int index = 0)
     {
+        // 리로드 중이면 강제 종료
+        if (reloadCoroutine != null)
+        {
+            StopCoroutine(reloadCoroutine);
+            reloadCoroutine = null;
+            isReloading = false;
+        }
+
         foreach (var gun in guns)
             gun.gameObject.SetActive(false);
 
         gun = guns[index];
-        gun.gameObject.SetActive(true);        
+        gun.gameObject.SetActive(true);
 
-        var weapon = gun.GetComponent<Weapon>();
+        weapon = gun.GetComponent<Weapon>();
         gunKickbackZ = weapon.gunKickbackZ;
         gunReturnSpeed = weapon.gunReturnSpeed;
         bulletPrefab = weapon.bulletPrefab;
@@ -115,6 +154,12 @@ public class GunController : MonoBehaviour
         fireRate = weapon.fireRate;
         bulletSpread = weapon.bulletSpread;
         gunOriginalPos = weapon.gunOriginalPos;
+        gunOriginalRot = weapon.gunOriginalRot;
+        magazineSize = weapon.magazineSize;
+        currentAmmo = weapon.magazineSize;
+        reloadRotation = weapon.reloadRotation;
+
+        weapon.gun.localRotation = gunOriginalRot;
     }
 
     private void ShootProjectile()
@@ -262,5 +307,43 @@ public class GunController : MonoBehaviour
 
         if (currentBulletCount < 0)
             currentBulletCount = 0;
+    }
+
+    private IEnumerator Reload()
+    {
+        isReloading = true;
+
+        var gun = weapon.gun;
+        Quaternion startRot = gun.localRotation;
+        Quaternion targetRot = startRot * Quaternion.Euler(reloadRotation);
+
+        float t = 0;
+
+        // 1. 기울이기
+        while (t < 1f)
+        {
+            t += Time.deltaTime * reloadRotateSpeed;
+            gun.localRotation = Quaternion.Slerp(startRot, targetRot, t);
+            yield return null;
+        }
+
+        SoundManager.Instance.PlaySFX("reload");
+
+        // 2. 잠깐 멈춤
+        yield return new WaitForSeconds(reloadStayTime);
+
+        // 3. 원위치 복귀
+        t = 0;
+        while (t < 1f)
+        {
+            t += Time.deltaTime * reloadRotateSpeed;
+            gun.localRotation = Quaternion.Slerp(targetRot, startRot, t);
+            yield return null;
+        }
+
+        gun.localRotation = startRot;
+
+        currentAmmo = magazineSize;
+        isReloading = false;
     }
 }
