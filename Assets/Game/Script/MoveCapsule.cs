@@ -30,7 +30,9 @@ public class MoveCapsule : MonoBehaviour
         if (Keyboard.current.sKey.isPressed) v = -1;
 
         Vector3 move = (transform.right * h + transform.forward * v) * speed;
-        rb.linearVelocity = new Vector3(move.x, rb.linearVelocity.y, move.z);
+        Vector3 newPos = rb.position + move * Time.fixedDeltaTime;
+
+        rb.MovePosition(newPos);
     }
 
     void Update()
