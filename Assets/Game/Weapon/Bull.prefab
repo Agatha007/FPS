@@ -155,6 +155,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7c32198b2b4e244297fd398e748eb1d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Bullet
-  moveCapsule: {fileID: 0}
-  hitEffect: {fileID: 8436083365011439390, guid: d14b235493c23124f8e56e6f4710c1ca, type: 3}
+  gunController: {fileID: 0}
   lifeTime: 3

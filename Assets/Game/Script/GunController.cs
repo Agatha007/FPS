@@ -8,26 +8,14 @@ public class GunController : MonoBehaviour
     [Header("총 설정")]
     public Transform[] guns;
     public Transform gun;
-    public float gunKickbackZ = 0.02f;
-    public float gunReturnSpeed = 12f;
-
-    private Vector3 gunOriginalPos;
-    private Quaternion gunOriginalRot;
 
     [Header("총알/발사")]    
     public bool useRaycast = false;
-    public GameObject bulletPrefab;
-    public Transform firePoint;
-    public float bulletSpeed = 20f;
-    public float fireRate = 0.1f;
     public GameObject hitEffect;
     public GameObject shotEffect;
 
     public int maxBulletCount = 100;
     private int currentBulletCount = 0;
-
-    [Header("총알 퍼짐")]
-    public float bulletSpread = 2f;
 
     [Header("총알 관리")]
     public Transform bulletRoot;
@@ -46,15 +34,9 @@ public class GunController : MonoBehaviour
     private List<GameObject> hitPool = new List<GameObject>();
 
     private float nextFireTime = 0f;
-
-    [Header("리로드")]
-    public int magazineSize = 30;     // 한 탄창
-    public int currentAmmo;           // 현재 탄창 탄수
-    public float reloadTime = 2f;     // 장전 시간
     private bool isReloading = false;
 
     [Header("리로드 회전 연출")]
-    public Vector3 reloadRotation = new Vector3(0f, 0f, -25f); // Z축으로 기울기
     public float reloadRotateSpeed = 5f;
     public float reloadStayTime = 1f;
 
@@ -84,17 +66,17 @@ public class GunController : MonoBehaviour
         {
             if (Time.time >= nextFireTime)
             {
-                if (currentAmmo > 0)
+                if (weapon.currentAmmo > 0)
                 {
                     if (useRaycast)
                         ShootRay();
                     else
                         ShootProjectile();
 
-                    currentAmmo--;
-                    nextFireTime = Time.time + fireRate;
+                    weapon.currentAmmo--;
+                    nextFireTime = Time.time + weapon.fireRate;
 
-                    if(currentAmmo <= 0)
+                    if(weapon.currentAmmo <= 0)
                         reloadCoroutine = StartCoroutine(Reload());
                 }
             }
@@ -104,8 +86,8 @@ public class GunController : MonoBehaviour
         {
             gun.localPosition = Vector3.Lerp(
                 gun.localPosition,
-                gunOriginalPos,
-                gunReturnSpeed * Time.deltaTime);
+                weapon.gunOriginalPos,
+                weapon.gunReturnSpeed * Time.deltaTime);
         }
 
 
@@ -122,7 +104,7 @@ public class GunController : MonoBehaviour
         // 리로드 (R키)
         if (Keyboard.current.rKey.wasPressedThisFrame)
         {
-            if (!isReloading && currentAmmo < magazineSize)
+            if (!isReloading && weapon.currentAmmo < weapon.magazineSize)
             {
                 reloadCoroutine = StartCoroutine(Reload());
             }
@@ -146,20 +128,11 @@ public class GunController : MonoBehaviour
         gun.gameObject.SetActive(true);
 
         weapon = gun.GetComponent<Weapon>();
-        gunKickbackZ = weapon.gunKickbackZ;
-        gunReturnSpeed = weapon.gunReturnSpeed;
-        bulletPrefab = weapon.bulletPrefab;
-        firePoint = weapon.firePoint;
-        bulletSpeed = weapon.bulletSpeed;
-        fireRate = weapon.fireRate;
-        bulletSpread = weapon.bulletSpread;
-        gunOriginalPos = weapon.gunOriginalPos;
-        gunOriginalRot = weapon.gunOriginalRot;
-        magazineSize = weapon.magazineSize;
-        currentAmmo = weapon.magazineSize;
-        reloadRotation = weapon.reloadRotation;
+        weapon.gun.localRotation = weapon.gunOriginalRot;
 
-        weapon.gun.localRotation = gunOriginalRot;
+        // 교체 했는데 총알이 없으면 재 장전.
+        if (weapon.currentAmmo <= 0)
+            reloadCoroutine = StartCoroutine(Reload());
     }
 
     private void ShootProjectile()
@@ -168,20 +141,20 @@ public class GunController : MonoBehaviour
 
         SoundManager.Instance.PlaySFX("shot");
 
-        float spreadX = Random.Range(-bulletSpread, bulletSpread);
-        float spreadY = Random.Range(-bulletSpread, bulletSpread);
+        float spreadX = Random.Range(-weapon.bulletSpread, weapon.bulletSpread);
+        float spreadY = Random.Range(-weapon.bulletSpread, weapon.bulletSpread);
 
         Vector3 shootDir =
-            firePoint.forward +
-            firePoint.right * spreadX * 0.01f +
-            firePoint.up * spreadY * 0.01f;
+            weapon.firePoint.forward +
+            weapon.firePoint.right * spreadX * 0.01f +
+            weapon.firePoint.up * spreadY * 0.01f;
 
         shootDir.Normalize();
 
         GameObject bullet = GetBullet();
 
-        bullet.transform.position = firePoint.position;
-        bullet.transform.rotation = Quaternion.LookRotation(shootDir);
+        bullet.transform.position = weapon.firePoint.position;
+        bullet.transform.rotation = Quaternion.LookRotation(shootDir) * Quaternion.Euler(270f, 0f, 0f); ;
         bullet.SetActive(true);
 
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
@@ -189,7 +162,7 @@ public class GunController : MonoBehaviour
         rb.linearVelocity = Vector3.zero;
         rb.angularVelocity = Vector3.zero;
 
-        rb.AddForce(shootDir * bulletSpeed, ForceMode.VelocityChange);
+        rb.AddForce(shootDir * weapon.bulletSpeed, ForceMode.VelocityChange);
 
         currentBulletCount++;
 
@@ -201,8 +174,8 @@ public class GunController : MonoBehaviour
     {
         SoundManager.Instance.PlaySFX("shot");
 
-        float spreadX = Random.Range(-bulletSpread, bulletSpread);
-        float spreadY = Random.Range(-bulletSpread, bulletSpread);
+        float spreadX = Random.Range(-weapon.bulletSpread, weapon.bulletSpread);
+        float spreadY = Random.Range(-weapon.bulletSpread, weapon.bulletSpread);
 
         Vector3 dir =
             playerCamera.forward +
@@ -227,7 +200,7 @@ public class GunController : MonoBehaviour
                 effect.transform.rotation = Quaternion.LookRotation(hit.normal);
                 effect.SetActive(true);
 
-                StartCoroutine(DisableEffect(effect, 2f));
+                DisableEffect(effect, 2f);
             }
         }
 
@@ -247,15 +220,18 @@ public class GunController : MonoBehaviour
         }
 
         // 없으면 새로 생성
-        GameObject obj = Instantiate(bulletPrefab, bulletRoot);
+        GameObject obj = Instantiate(weapon.bulletPrefab, bulletRoot);
         obj.SetActive(false);
+
+        var bullet = obj.GetComponent<Bullet>();
+        bullet.gunController = this;
 
         bulletPool.Add(obj);
 
         return obj;
     }
 
-    private GameObject GetHitEffect()
+    public GameObject GetHitEffect()
     {
         for (int i = 0; i < hitPool.Count; i++)
         {
@@ -273,7 +249,12 @@ public class GunController : MonoBehaviour
         return obj;
     }
 
-    private IEnumerator DisableEffect(GameObject obj, float time)
+    public void DisableEffect(GameObject obj, float time)
+    {
+        StartCoroutine(CoDisableEffect(obj, time));
+    }
+
+    public IEnumerator CoDisableEffect(GameObject obj, float time)
     {
         yield return new WaitForSeconds(time);
 
@@ -285,19 +266,19 @@ public class GunController : MonoBehaviour
     {
         if (gun == null) return;
 
-        float zKick = -gunKickbackZ;
+        float zKick = -weapon.gunKickbackZ;
 
-        gun.localPosition = gunOriginalPos + new Vector3(0f, 0f, zKick);
+        gun.localPosition = weapon.gunOriginalPos + new Vector3(0f, 0f, zKick);
     }
 
     public void ShotEffect()
     {
         if (shotEffect == null)
             return;
-        if (firePoint == null)
+        if (weapon.firePoint == null)
             return;
 
-        GameObject obj = Instantiate(shotEffect, firePoint);
+        GameObject obj = Instantiate(shotEffect, weapon.firePoint);
         obj.transform.localPosition = Vector3.zero;
     }
 
@@ -315,7 +296,7 @@ public class GunController : MonoBehaviour
 
         var gun = weapon.gun;
         Quaternion startRot = gun.localRotation;
-        Quaternion targetRot = startRot * Quaternion.Euler(reloadRotation);
+        Quaternion targetRot = startRot * Quaternion.Euler(weapon.reloadRotation);
 
         float t = 0;
 
@@ -343,7 +324,7 @@ public class GunController : MonoBehaviour
 
         gun.localRotation = startRot;
 
-        currentAmmo = magazineSize;
+        weapon.currentAmmo = weapon.magazineSize;
         isReloading = false;
     }
 }

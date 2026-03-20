@@ -1,33 +1,45 @@
+using System.Collections;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
-    public GunController gunController;
-    public GameObject hitEffect;
+    [HideInInspector] public GunController gunController;
+    [HideInInspector] public float lifeTime = 3f;
 
-    public float lifeTime = 3f;
+    private Coroutine disableCoroutine;
 
-    void Start()
+    private void OnEnable()
     {
-        Destroy(gameObject, lifeTime);
+        if (disableCoroutine != null)
+            StopCoroutine(disableCoroutine);
+
+        disableCoroutine = StartCoroutine(DisableAfterTime(lifeTime));
     }
 
     void OnCollisionEnter(Collision collision)
     {
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Player") ||
+            collision.gameObject.layer == LayerMask.NameToLayer("Weapon"))
+            return;
+
         ContactPoint contact = collision.contacts[0];
 
-        Vector3 pos = contact.point - contact.normal * 0.1f;
+        GameObject effect = gunController.GetHitEffect();
+        effect.transform.position = contact.point + contact.normal * 0.15f;
+        effect.transform.rotation = Quaternion.LookRotation(contact.normal);
+        effect.SetActive(true);
 
-        Instantiate( hitEffect, contact.point, Quaternion.LookRotation(contact.normal) );
+        gunController.DisableEffect(effect, 2f);
+        gunController.RemoveBullet();
 
-        Destroy(gameObject);
+        gameObject.SetActive(false);        
     }
 
-    void OnDestroy()
+    private IEnumerator DisableAfterTime(float time)
     {
-        if (gunController != null)
-        {
-            gunController.RemoveBullet();
-        }
+        yield return new WaitForSeconds(time);
+        gameObject.SetActive(false);
+
+        gunController.RemoveBullet();
     }
 }

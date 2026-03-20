@@ -20,6 +20,7 @@ public class Weapon : MonoBehaviour
 
     [Header("리로드")]
     public int magazineSize = 30;     // 한 탄창
+    public int currentAmmo;         // 현재 탄창 탄수
     public float reloadTime = 1f;     // 장전 시간
 
     [Header("리로드 회전 연출")]
@@ -34,5 +35,6 @@ public class Weapon : MonoBehaviour
     {
         gunOriginalPos = transform.localPosition;
         gunOriginalRot = gun.localRotation;
+        currentAmmo = magazineSize;
     }
 }

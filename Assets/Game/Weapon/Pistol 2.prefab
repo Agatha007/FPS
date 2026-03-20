@@ -1791,17 +1791,19 @@ MonoBehaviour:
   gun: {fileID: 6666567688023039541}
   gunKickbackZ: 0.04
   gunReturnSpeed: 12
-  bulletPrefab: {fileID: 0}
+  bulletPrefab: {fileID: 8718110357464100352, guid: 3fd71bc83ea4f934db177f31e46bf910, type: 3}
   firePoint: {fileID: 7539537555128056986}
   bulletSpeed: 10
   fireRate: 0.5
   bulletSpread: 1
   magazineSize: 7
+  currentAmmo: 0
   reloadTime: 1
   reloadRotation: {x: 0, y: 0, z: 25}
   reloadRotateSpeed: 5
   reloadStayTime: 1
   gunOriginalPos: {x: 0, y: 0, z: 0}
+  gunOriginalRot: {x: 0, y: 0, z: 0, w: 0}
 --- !u!1 &5876240994711457314
 GameObject:
   m_ObjectHideFlags: 0
