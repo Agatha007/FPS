@@ -198,6 +198,7 @@ public class GunController : MonoBehaviour
 
                 effect.transform.position = pos;
                 effect.transform.rotation = Quaternion.LookRotation(hit.normal);
+                effect.transform.SetParent(hit.collider.transform, true);
                 effect.SetActive(true);
 
                 DisableEffect(effect, 2f);
@@ -257,6 +258,9 @@ public class GunController : MonoBehaviour
     public IEnumerator CoDisableEffect(GameObject obj, float time)
     {
         yield return new WaitForSeconds(time);
+
+        // 부모 원래대로 복구
+        obj.transform.SetParent(hitRoot);
 
         if (obj != null)
             obj.SetActive(false);
