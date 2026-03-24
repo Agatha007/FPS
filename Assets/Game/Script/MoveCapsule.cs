@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -13,10 +14,16 @@ public class MoveCapsule : MonoBehaviour
     private Rigidbody rb;
     private float xRotation = 0f;
 
+    float _rotationX; // 수직 회전 (카메라)
+    float _rotationY; // 수평 회전 (플레이어 몸체)
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true; // 회전 물리 막기
+
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void FixedUpdate()
@@ -33,25 +40,19 @@ public class MoveCapsule : MonoBehaviour
         Vector3 newPos = rb.position + move * Time.fixedDeltaTime;
 
         rb.MovePosition(newPos);
+
+        Quaternion targetRotation = Quaternion.Euler(0f, _rotationY, 0f);
+        rb.MoveRotation(targetRotation);
     }
 
     void Update()
     {
-        Vector2 mousePos = Mouse.current.position.ReadValue();
-        //if (Mouse.current.leftButton.isPressed && mousePos.x > Screen.width * 0.5f)
-        if (Mouse.current.leftButton.isPressed)
-        {
-            float mouseX = Mouse.current.delta.x.ReadValue();
-            float mouseY = Mouse.current.delta.y.ReadValue();
+        Vector2 mouseDelta = Mouse.current.delta.ReadValue();
 
-            // 플레이어 회전 (Y축)
-            Quaternion deltaRotation = Quaternion.Euler(0f, mouseX * mouseSensitivity * Time.deltaTime, 0f);
-            rb.MoveRotation(rb.rotation * deltaRotation);
+        _rotationY += mouseDelta.x * mouseSensitivity * 0.1f;
+        _rotationX -= mouseDelta.y * mouseSensitivity * 0.1f;
+        _rotationX = Mathf.Clamp(_rotationX, -80f, 80f);
 
-            // 카메라 회전 (X축)
-            xRotation -= mouseY * mouseSensitivity * Time.deltaTime;
-            xRotation = Mathf.Clamp(xRotation, -80f, 80f);
-            playerCamera.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
-        }
+        playerCamera.localRotation = Quaternion.Euler(_rotationX, 0f, 0f);
     }
 }

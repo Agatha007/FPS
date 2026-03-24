@@ -1036,12 +1036,28 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3297176719929763618, guid: 1fb139840a91e2e479d6fbe62cc18370, type: 3}
+      propertyPath: smoothTime
+      value: 0.08
+      objectReference: {fileID: 0}
+    - target: {fileID: 3297176719929763618, guid: 1fb139840a91e2e479d6fbe62cc18370, type: 3}
+      propertyPath: mouseSensitivityX
+      value: 80
+      objectReference: {fileID: 0}
+    - target: {fileID: 3297176719929763618, guid: 1fb139840a91e2e479d6fbe62cc18370, type: 3}
+      propertyPath: mouseSensitivityY
+      value: 80
+      objectReference: {fileID: 0}
     - target: {fileID: 6783473038922301788, guid: 1fb139840a91e2e479d6fbe62cc18370, type: 3}
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 6783473038922301788, guid: 1fb139840a91e2e479d6fbe62cc18370, type: 3}
       propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7657072938731809241, guid: 1fb139840a91e2e479d6fbe62cc18370, type: 3}
+      propertyPath: m_Interpolate
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []

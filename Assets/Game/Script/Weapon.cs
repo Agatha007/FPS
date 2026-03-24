@@ -28,6 +28,9 @@ public class Weapon : MonoBehaviour
     public float reloadRotateSpeed = 5f;
     public float reloadStayTime = 1f;
 
+    [Header("µ¥¹ÌÁö")]
+    public int damage = 1;
+
     [HideInInspector] public Vector3 gunOriginalPos;
     [HideInInspector] public Quaternion gunOriginalRot;
 

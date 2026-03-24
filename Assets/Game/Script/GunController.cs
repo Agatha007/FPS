@@ -203,6 +203,12 @@ public class GunController : MonoBehaviour
 
                 DisableEffect(effect, 2f);
             }
+
+            Enemy enemy = hit.collider.GetComponent<Enemy>();
+            if (enemy != null)
+            {
+                enemy.TakeDamage(weapon.damage); // weapon에 damage 변수 추가 필요
+            }
         }
 
         ShotEffect();

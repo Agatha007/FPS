@@ -6,6 +6,7 @@ public class Enemy : MonoBehaviour
     public Transform target;
     public float stopDistance = 3f;
     public float moveSpeed = 5f; // ¼Óµµ Á¶Àý
+    public int hp = 10;
 
     private NavMeshAgent agent;
 
@@ -30,5 +31,21 @@ public class Enemy : MonoBehaviour
         {
             agent.ResetPath(); // ¸ØÃã
         }
+    }
+
+    public void TakeDamage(int damage)
+    {
+        hp -= damage;
+
+        if (hp <= 0)
+        {
+            Die();
+        }
+    }
+
+    private void Die()
+    {
+        //Destroy(gameObject);
+        this.gameObject.SetActive(false);
     }
 }
